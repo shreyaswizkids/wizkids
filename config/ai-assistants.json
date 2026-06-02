@@ -5,7 +5,7 @@
     "Admins set the default guide at /admin/school-branding.html (AI guide section).",
     "legacyFiles paths are relative to wizkids/img/ — same pattern as Krishna."
   ],
-  "defaultAssistantId": "krishna",
+  "defaultAssistantId": "radha",
   "assistants": [
     {
       "id": "krishna",

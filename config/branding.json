@@ -1,10 +1,10 @@
 {
-  "schoolName": "Purna Chetana",
+  "schoolName": "WizKids Gurukul",
   "tagline": "Digital Learning",
   "loginSubtitle": "Welcome to E-Learning",
   "loginButtonText": "Enter Gurukul ✨",
   "portalHero": "AI-powered personalized learning. Choose your path below to begin the journey.",
-  "logoPath": "img/branding-logo.jpg",
+  "logoPath": "img/branding-logo.png",
   "mentorLoginSubtitle": "Mentor Dashboard",
   "mentorHeaderSubtitle": "Mentor View",
   "smeLoginTitle": "Curated Content",
