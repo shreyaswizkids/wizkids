@@ -185,6 +185,7 @@ const SCHEMA = `
   CREATE TABLE IF NOT EXISTS subtopic_feedback (
     id            INTEGER PRIMARY KEY AUTOINCREMENT,
     user_id       TEXT NOT NULL REFERENCES users(id),
+    topic_key     TEXT,
     subtopic_key  TEXT NOT NULL,
     feedback_json TEXT NOT NULL,
     saved_at      TEXT DEFAULT (datetime('now'))
@@ -291,10 +292,10 @@ const SCHEMA = `
 
   -- Ordered, required/optional topic list per path.
   CREATE TABLE IF NOT EXISTS learning_path_topics (
-    path_id     TEXT NOT NULL REFERENCES learning_paths(id) ON DELETE CASCADE,
-    topic_id    TEXT NOT NULL,
-    sort_order  INTEGER DEFAULT 0,
-    is_required INTEGER DEFAULT 1,
+    path_id      TEXT NOT NULL REFERENCES learning_paths(id) ON DELETE CASCADE,
+    topic_id     TEXT NOT NULL,
+    sort_order   INTEGER DEFAULT 0,
+    is_required  INTEGER DEFAULT 1,
     is_published INTEGER DEFAULT 0,
     PRIMARY KEY (path_id, topic_id)
   );
@@ -503,9 +504,14 @@ function init(customDir) {
   if (process.env.SQLITE_JOURNAL_MODE) {
     _db.exec(`PRAGMA journal_mode = ${process.env.SQLITE_JOURNAL_MODE}`);
   }
+  // Migration: add is_published if DB existed before this column was added
   try {
     _db.exec(`ALTER TABLE learning_path_topics ADD COLUMN is_published INTEGER DEFAULT 0`);
-  } catch (_) { /* column already exists */ }
+  } catch (_) { /* column already exists — safe to ignore */ }
+  // Migration: add topic_key to subtopic_feedback if DB existed before this column was added
+  try {
+    _db.exec(`ALTER TABLE subtopic_feedback ADD COLUMN topic_key TEXT`);
+  } catch (_) { /* column already exists — safe to ignore */ }
   _seed();
   console.log('[GKServer/db] ready at', DB_PATH);
 }
@@ -892,21 +898,126 @@ const Q = {
   },
 
   // Feedback
-  saveSubtopicFeedback(userId, subtopicKey, data) {
+  // Aditya: now takes topicKey as well so feedback can be grouped by module in /api/feedback/all
+  saveSubtopicFeedback(userId, topicKey, subtopicKey, data) {
     db().prepare(
-      `INSERT INTO subtopic_feedback (user_id, subtopic_key, feedback_json) VALUES (?,?,?)`
-    ).run(userId, subtopicKey, JSON.stringify(data));
+      `INSERT INTO subtopic_feedback (user_id, topic_key, subtopic_key, feedback_json)
+       VALUES (?, ?, ?, ?)`
+    ).run(userId, topicKey, subtopicKey, JSON.stringify(data));
   },
   saveModuleFeedback(userId, topicKey, data) {
     db().prepare(
       `INSERT INTO module_feedback (user_id, topic_key, feedback_json) VALUES (?,?,?)`
     ).run(userId, topicKey, JSON.stringify(data));
   },
+  // Aditya: persists session feedback to session_feedback table (permanent, not volatile active_sessions)
   saveSessionFeedback(userId, data) {
     db().prepare(
-      `UPDATE active_sessions SET feedback_json=? WHERE user_id=?`
-    ).run(JSON.stringify(data), userId);
+      `INSERT INTO session_feedback (user_id, feedback_json) VALUES (?, ?)`
+    ).run(userId, JSON.stringify(data));
   },
+  // Aditya: new method — returns all feedback consolidated by student for dashboard
+  getAllFeedback(userId = null) {
+    const d = db();
+    const where  = userId ? `WHERE sf.user_id = ?` : '';
+    const params = userId ? [userId] : [];
+
+    const subtopicRows = d.prepare(`
+      SELECT sf.id, sf.user_id, sf.topic_key, sf.subtopic_key,
+            sf.feedback_json, sf.saved_at,
+            t.name  AS topic_name,
+            st.name AS subtopic_name
+      FROM subtopic_feedback sf
+      LEFT JOIN topics    t  ON t.id = sf.topic_key
+      LEFT JOIN subtopics st ON st.id = REPLACE(sf.subtopic_key, sf.topic_key || '-', '')
+                            AND st.topic_id = sf.topic_key
+      ${where}
+      ORDER BY sf.saved_at DESC
+    `).all(...params);
+
+    const moduleRows = d.prepare(`
+      SELECT mf.id, mf.user_id, mf.topic_key,
+             mf.feedback_json, mf.saved_at,
+             t.name AS topic_name
+      FROM module_feedback mf
+      LEFT JOIN topics t ON t.id = mf.topic_key
+      ${where.replace('sf.user_id', 'mf.user_id')}
+      ORDER BY mf.saved_at DESC
+    `).all(...params);
+
+    const sessionRows = d.prepare(`
+      SELECT id, user_id, feedback_json, saved_at
+      FROM session_feedback
+      ${userId ? 'WHERE user_id = ?' : ''}
+      ORDER BY saved_at DESC
+    `).all(...params);
+
+    const allUserIds = new Set([
+      ...subtopicRows.map(r => r.user_id),
+      ...moduleRows.map(r => r.user_id),
+      ...sessionRows.map(r => r.user_id),
+    ]);
+
+    return [...allUserIds].map(uid => {
+      const sessions = sessionRows
+        .filter(r => r.user_id === uid)
+        .map(r => {
+          const fb = JSON.parse(r.feedback_json);
+          return {
+            id:               r.id,
+            savedAt:          r.saved_at,
+            enjoyedMost:      fb.responses?.enjoyedMost      || null,
+            improvementPoint: fb.responses?.improvementPoint || null,
+          };
+        });
+
+      const modulesMap = {};
+
+      moduleRows.filter(r => r.user_id === uid).forEach(r => {
+        const fb = JSON.parse(r.feedback_json);
+        modulesMap[r.topic_key] = {
+          topicKey:  r.topic_key,
+          topicName: r.topic_name || r.topic_key,
+          savedAt:   r.saved_at,
+          feedback: {
+            enjoyedMost:      fb.responses?.enjoyedMost      || null,
+            improvementPoint: fb.responses?.improvementPoint || null,
+          },
+          subtopics: [],
+        };
+      });
+
+      subtopicRows.filter(r => r.user_id === uid).forEach(r => {
+        const fb     = JSON.parse(r.feedback_json);
+        const parent = r.topic_key || 'unknown';
+        if (!modulesMap[parent]) {
+          modulesMap[parent] = {
+            topicKey:  parent,
+            topicName: r.topic_name || parent,
+            savedAt:   null,
+            feedback:  null,
+            subtopics: [],
+          };
+        }
+        modulesMap[parent].subtopics.push({
+          subtopicKey:  r.subtopic_key,
+          subtopicName: r.subtopic_name || r.subtopic_key,
+          savedAt:      r.saved_at,
+          feedback: {
+            enjoyedMost:      fb.responses?.enjoyedMost      || null,
+            improvementPoint: fb.responses?.improvementPoint || null,
+          },
+        });
+      });
+
+      return {
+        userId:  uid,
+        sessions,
+        modules: Object.values(modulesMap),
+      };
+    });
+  },
+
 
   // Quick-check
   saveQuickCheck(userId, result) {

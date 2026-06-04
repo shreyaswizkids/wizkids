@@ -1,0 +1,65 @@
+.migration-shell {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+}
+
+.migration-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid #d7dde6;
+  background: #ffffff;
+}
+
+.migration-header h1 {
+  margin: 0;
+  font-size: 1.2rem;
+  color: #1a2329;
+}
+
+.migration-header p {
+  margin: 0.35rem 0 0;
+  font-size: 0.9rem;
+  color: #506272;
+  max-width: 52rem;
+}
+
+.migration-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.migration-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #ccd6e1;
+  border-radius: 999px;
+  padding: 0.45rem 0.8rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-decoration: none;
+  color: #2a455c;
+  background: #f8fbff;
+}
+
+.migration-link:hover {
+  border-color: #9eb4c8;
+}
+
+.migration-main {
+  flex: 1;
+  min-height: 0;
+  background: #eef3f8;
+}
+
+.legacy-frame {
+  width: 100%;
+  height: 100%;
+  border: none;
+  background: #ffffff;
+}

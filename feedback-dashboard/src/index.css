@@ -1,0 +1,184 @@
+:root {
+  --pc-primary: #6B3F1A;
+  --pc-secondary: #C4882A;
+  --pc-bg: #F5EDD8;
+  --pc-surface: #FFFDE7;
+  --pc-border: #E2C9A0;
+  --pc-text: #2D1B0E;
+  --pc-text-light: #666;
+  
+  --status-positive: #27ae60;
+  --status-neutral: #f39c12;
+  --status-negative: #e74c3c;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  font-family: 'Poppins', sans-serif;
+  background-color: var(--pc-bg);
+  color: var(--pc-text);
+}
+
+.dashboard-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+.dashboard-header {
+  margin-bottom: 2rem;
+  border-bottom: 2px solid var(--pc-border);
+  padding-bottom: 1rem;
+}
+
+.dashboard-header h1 {
+  margin: 0;
+  color: var(--pc-primary);
+  font-size: 2rem;
+}
+
+.card {
+  background: white;
+  border: 1px solid var(--pc-border);
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.02);
+  margin-bottom: 1.5rem;
+}
+
+.card-title {
+  margin-top: 0;
+  margin-bottom: 1rem;
+  font-size: 1.1rem;
+  color: var(--pc-primary);
+  font-weight: 600;
+}
+
+/* Summary Cards */
+.summary-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.summary-card {
+  background: var(--pc-surface);
+  border: 1px solid var(--pc-border);
+  border-radius: 12px;
+  padding: 1.5rem;
+  text-align: center;
+}
+
+.summary-value {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: var(--pc-secondary);
+  margin: 0.5rem 0;
+}
+
+.summary-label {
+  font-size: 0.9rem;
+  color: var(--pc-text-light);
+  font-weight: 500;
+}
+
+/* Layout Grids */
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 2rem;
+}
+
+@media (max-width: 900px) {
+  .dashboard-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Progress Bars */
+.progress-container {
+  margin-bottom: 1rem;
+}
+
+.progress-label {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 0.25rem;
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.progress-bar-bg {
+  height: 8px;
+  background: #eee;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.progress-bar-fill {
+  height: 100%;
+  border-radius: 4px;
+}
+
+/* Tables */
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.data-table th, .data-table td {
+  padding: 0.75rem;
+  text-align: left;
+  border-bottom: 1px solid #eee;
+}
+
+.data-table th {
+  color: var(--pc-text-light);
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.status-badge {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.status-positive { background: #e8f5e9; color: var(--status-positive); }
+.status-neutral { background: #fff8e1; color: var(--status-neutral); }
+.status-negative { background: #ffebee; color: var(--status-negative); }
+
+.ranking-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.ranking-item {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.75rem 0;
+  border-bottom: 1px solid #eee;
+}
+
+.ranking-item:last-child {
+  border-bottom: none;
+}
+
+.ranking-score {
+  font-weight: 700;
+}
+
+/* States */
+.state-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 50vh;
+  font-size: 1.2rem;
+  color: var(--pc-primary);
+}

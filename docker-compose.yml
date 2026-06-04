@@ -1,3 +1,5 @@
+version: '3.8'
+
 services:
   gurukul:
     build: .
@@ -11,9 +13,9 @@ services:
       - GEMINI_API_KEY=${GEMINI_API_KEY}
       - SQLITE_JOURNAL_MODE=DELETE
     volumes:
-      - gurukul-db:/app/db
-      - ./config:/app/config
-      - ./.env:/app/.env
+      - gurukul-db:/app/db           # Persistent SQLite database
+      - ./config:/app/config         # Hot-reloadable curriculum paths
+      - ./.env:/app/.env             # Secure external API secrets
 
 volumes:
   gurukul-db:

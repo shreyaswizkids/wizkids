@@ -21,6 +21,8 @@ const GKFeedback = (() => {
   function getReadableLabel(questionId, value) {
     const question = GK_FEEDBACK_QUESTIONS.find(q => q.id === questionId);
     if (!question) return String(value);
+    if (!question.options || question.options.length === 0)
+      return String(value);
     const option = question.options.find(o => o.value === value);
     return option ? `${option.emoji || ''} ${option.label}`.trim() : String(value);
   }

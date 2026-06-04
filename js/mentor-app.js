@@ -60,7 +60,8 @@ const GKMentorApp = (() => {
       studentDetail: renderStudentDetail,
       liveView: renderLiveView,
       holisticDetail: renderHolisticDetail,
-      hqGeneration: renderHQGeneration
+      hqGeneration: renderHQGeneration,
+      feedbackDashboard: renderFeedbackDashboard
     };
     const renderer = screens[state.currentScreen] || renderLogin;
     
@@ -285,9 +286,12 @@ const GKMentorApp = (() => {
         ${renderMentorHeader()}
         <div class="screen-full-col">
           <div class="mentor-content">
-            <div class="mentor-page-header">
-              <h2>Guru Dashboard</h2>
-              <p>Monitor your students' progress and holistic development.</p>
+            <div class="mentor-page-header" style="flex-direction: row; justify-content: space-between; align-items: center;">
+              <div>
+                <h2 style="margin: 0;">Guru Dashboard</h2>
+                <p style="margin: 0;">Monitor your students' progress and holistic development.</p>
+              </div>
+              <button class="btn btn-primary" onclick="GKMentorApp.loadFeedbackDashboard()" style="padding: 0.75rem 1.5rem; font-size: 1rem; border-radius: 8px;">Feedback Dashboard</button>
             </div>
             
             <div class="student-grid">
@@ -377,16 +381,16 @@ const GKMentorApp = (() => {
     const totalXP = profile.totalXP || 0;
     const sessions = JSON.parse(localStorage.getItem('gk_session_history_' + student.id) || '[]');
 
-    let summary = `Namaste Guru! Here is ${name}'s journey so far:\n\n`;
+    let summary = `Namaste Guru! Here is ${name}'s journey so far:nn`;
 
     if (completedTopics.length > 0) {
-      summary += `\u2705 Completed ${completedTopics.length} module(s): ${completedTopics.slice(0, 3).join(', ')}${completedTopics.length > 3 ? '...' : ''}\n`;
+      summary += `u2705 Completed ${completedTopics.length} module(s): ${completedTopics.slice(0, 3).join(', ')}${completedTopics.length > 3 ? '...' : ''}n`;
     } else {
-      summary += `\ud83d\udcda ${name} hasn't completed any modules yet.\n`;
+      summary += `ud83dudcda ${name} hasn't completed any modules yet.n`;
     }
 
-    summary += `\u2728 Total XP: ${totalXP}\n`;
-    summary += `\ud83d\udcc5 Sessions attended: ${sessions.length}\n`;
+    summary += `u2728 Total XP: ${totalXP}n`;
+    summary += `ud83dudcc5 Sessions attended: ${sessions.length}n`;
 
     // Check for areas needing attention
     const attempts = JSON.parse(localStorage.getItem('gk_assessment_attempts_' + student.id) || '{}');
@@ -399,9 +403,9 @@ const GKMentorApp = (() => {
     });
 
     if (weakAreas.length > 0) {
-      summary += `\u26a0\ufe0f Needs attention in: ${weakAreas.join(', ')}\n`;
+      summary += `u26a0ufe0f Needs attention in: ${weakAreas.join(', ')}n`;
     } else if (completedTopics.length > 0) {
-      summary += `\ud83c\udf1f ${name} is doing excellent! All assessments passed.\n`;
+      summary += `ud83cudf1f ${name} is doing excellent! All assessments passed.n`;
     }
 
     return summary;
@@ -896,7 +900,7 @@ const GKMentorApp = (() => {
     const student = state.students[userId];
     const name = student ? (student.displayName || userId) : userId;
     const confirmed = window.confirm(
-      `Clear ALL data for ${name}?\n\nThis will erase:\n• Total XP (Prana) & Level\n• All subtopic scores\n• All assessment attempts\n• All completion markers\n\nThis cannot be undone.`
+      `Clear ALL data for ${name}?nnThis will erase:n• Total XP (Prana) & Leveln• All subtopic scoresn• All assessment attemptsn• All completion markersnnThis cannot be undone.`
     );
     if (!confirmed) return;
 
@@ -1034,7 +1038,7 @@ const GKMentorApp = (() => {
       hqScores.eq = m.human_eq !== null ? Math.round((m.ai_eq + m.human_eq) / 2) : (m.ai_eq || 'N/A');
     }
 
-    return {
+  return {
       mentorName: state.mentor ? (state.mentor.displayName || 'Guru') : 'Guru',
       studentName: student.displayName || 'Shishya',
       topicId: state.selectedTopicId || 'Overall',
@@ -1171,13 +1175,13 @@ const GKMentorApp = (() => {
 
     let topicChoices = '';
     if (nextPathTopics.length > 0) {
-      topicChoices = '\n\nSelect topics to unlock (enter numbers, comma-separated):\n';
+      topicChoices = 'nnSelect topics to unlock (enter numbers, comma-separated):n';
       nextPathTopics.forEach((t, i) => {
-        topicChoices += `${i + 1}. ${t.subject.icon} ${t.subject.name}: ${t.topic.name}${t.alreadyUnlocked ? ' (already unlocked)' : ''}\n`;
+        topicChoices += `${i + 1}. ${t.subject.icon} ${t.subject.name}: ${t.topic.name}${t.alreadyUnlocked ? ' (already unlocked)' : ''}n`;
       });
     }
 
-    const input = prompt(`Promote ${name} to the next level?${topicChoices}\n\nENTRUSTMENT: Enter topic numbers (e.g. 1,2,3) to guide them toward these advanced modules. Leave empty to promote without new assignments:`);
+    const input = prompt(`Promote ${name} to the next level?${topicChoices}nnENTRUSTMENT: Enter topic numbers (e.g. 1,2,3) to guide them toward these advanced modules. Leave empty to promote without new assignments:`);
     if (input === null) return false; // cancelled
 
     // Parse selected topic numbers
@@ -1234,7 +1238,7 @@ const GKMentorApp = (() => {
       GKStore.submitMentorEvaluation(userId, { feedback: '', decision });
 
       GKStore.addMentorNote(userId, {
-        message: "📝 Please redo the following topics and their assessments:\n" + resetTopicNames.join(', '),
+        message: "📝 Please redo the following topics and their assessments:n" + resetTopicNames.join(', '),
         topicKey: null,
         focusTopics: resetTopicNames
       });
@@ -1628,7 +1632,7 @@ const GKMentorApp = (() => {
 
   function _formatTopicId(tid) {
     if (tid === 'final') return '🏆 Final Assessment';
-    return tid.replace(/-/g, ' → ').replace(/\b\w/g, c => c.toUpperCase());
+    return tid.replace(/-/g, ' → ').replace(/bw/g, c => c.toUpperCase());
   }
 
 
@@ -1931,6 +1935,407 @@ const GKMentorApp = (() => {
 
 
 
+    // ---- FEEDBACK DASHBOARD ----
+  async function loadFeedbackDashboard() {
+    state.currentScreen = 'feedbackDashboard';
+    state.feedbackLoading = true;
+    render(); // Show loading skeleton
+
+    try {
+      const res = await fetch('/api/feedback/all');
+      const rawData = await res.json();
+      state.feedbackData = parseFeedbackData(rawData);
+    } catch(err) {
+      console.error("Failed to load feedback", err);
+      state.feedbackData = null;
+    } finally {
+      state.feedbackLoading = false;
+      if (state.currentScreen === 'feedbackDashboard') renderInPlace();
+    }
+  }
+
+  function toggleStudentDetails(userId) {
+    state.expandedStudentId = state.expandedStudentId === userId ? null : userId;
+    if (state.currentScreen === 'feedbackDashboard') renderInPlace();
+  }
+
+  function updateFeedbackSearch(query) {
+    state.feedbackSearchQuery = query.toLowerCase();
+    if (state.currentScreen === 'feedbackDashboard') renderInPlace();
+  }
+
+  function analyzeFeedbackSentiment(text) {
+    if (!text || typeof text !== 'string' || text.trim().length < 4) return 'Sentiment Unavailable';
+    
+    // Check for meaningless repeats (e.g. "ds ds", "cc")
+    const words = text.toLowerCase().trim().split(/s+/);
+    if (words.length <= 2 && words[0] === words[1]) return 'Sentiment Unavailable';
+
+    const t = text.toLowerCase();
+    const positive = ['fun', 'great', 'good', 'easy', 'understood', 'awesome', 'clear', 'nice', 'enjoyed', 'loved', 'helpful', 'interesting', 'liked', 'excellent'];
+    const negative = ['hard', 'difficult', 'confusing', 'boring', 'bad', 'tough', 'complicated', 'did not get', 'did not understand', 'poor'];
+    
+    let posCount = 0;
+    let negCount = 0;
+    positive.forEach(w => { if (t.includes(w)) posCount++; });
+    negative.forEach(w => { if (t.includes(w)) negCount++; });
+    
+    if (posCount > negCount) return 'Positive';
+    if (negCount > posCount) return 'Negative';
+    if (posCount === 0 && negCount === 0 && text.length < 10) return 'Sentiment Unavailable';
+    return 'Neutral';
+  }
+
+  function parseFeedbackData(rawData) {
+    let studentMetrics = [];
+    let totalFeedback = 0;
+    let totalPositive = 0;
+    let totalNeutral = 0;
+    let totalNegative = 0;
+    let validSentimentRecords = 0;
+    let recentFeedback = [];
+
+    rawData.forEach(student => {
+      let entries = [];
+      
+      (student.sessions || []).forEach(s => {
+        if (s.enjoyedMost || s.improvementPoint) {
+          entries.push({ date: s.savedAt, source: 'Session', text: ((s.enjoyedMost || '') + ' ' + (s.improvementPoint || '')).trim() });
+        }
+      });
+
+      (student.modules || []).forEach(m => {
+        if (m.feedback && (m.feedback.enjoyedMost || m.feedback.improvementPoint)) {
+          entries.push({ date: m.savedAt, source: 'Module: ' + m.topicName, text: ((m.feedback.enjoyedMost || '') + ' ' + (m.feedback.improvementPoint || '')).trim() });
+        }
+        (m.subtopics || []).forEach(st => {
+          if (st.feedback && (st.feedback.enjoyedMost || st.feedback.improvementPoint)) {
+            entries.push({ date: st.savedAt, source: 'Subtopic: ' + st.subtopicName, text: ((st.feedback.enjoyedMost || '') + ' ' + (st.feedback.improvementPoint || '')).trim() });
+          }
+        });
+      });
+
+      if (entries.length === 0) return;
+
+      let posCount = 0;
+      let validCountForStudent = 0;
+
+      entries = entries.map(e => {
+        const sentiment = analyzeFeedbackSentiment(e.text);
+        if (sentiment !== 'Sentiment Unavailable') {
+          validSentimentRecords++;
+          validCountForStudent++;
+          if (sentiment === 'Positive') { totalPositive++; posCount++; }
+          else if (sentiment === 'Negative') totalNegative++;
+          else totalNeutral++;
+        }
+        recentFeedback.push({ userId: student.userId, ...e, sentiment });
+        return { ...e, sentiment };
+      });
+
+      const positivePercentage = validCountForStudent > 0 ? Math.round((posCount / validCountForStudent) * 100) : null;
+      let status = 'Insufficient Data';
+      
+      if (validCountForStudent > 0) {
+        if (positivePercentage >= 80) status = 'Excellent';
+        else if (positivePercentage >= 60) status = 'Good';
+        else if (positivePercentage >= 40) status = 'Average';
+        else status = 'Needs Attention';
+      }
+
+      totalFeedback += entries.length;
+
+      studentMetrics.push({
+        userId: student.userId,
+        feedbackCount: entries.length,
+        positivePercentage,
+        status,
+        entries
+      });
+    });
+
+    recentFeedback.sort((a, b) => new Date(b.date || 0) - new Date(a.date || 0));
+
+    return {
+      studentMetrics,
+      totalFeedback,
+      totalStudents: studentMetrics.length,
+      validSentimentRecords,
+      totalPositive,
+      totalNeutral,
+      totalNegative,
+      recentFeedback: recentFeedback.slice(0, 10)
+    };
+  }
+
+  function renderFeedbackDashboard() {
+    if (state.feedbackLoading) {
+      return `
+        <div class="screen screen-mentor">
+          ${renderMentorHeader()}
+          <div class="screen-full-col">
+            <div class="mentor-content">
+              <div class="empty-state">Loading feedback data...</div>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    if (!state.feedbackData || state.feedbackData.studentMetrics.length === 0) {
+      return `
+        <div class="screen screen-mentor">
+          ${renderMentorHeader()}
+          <div class="screen-full-col">
+            <div class="mentor-content">
+               <div class="detail-nav-row" style="margin-bottom: 2rem;">
+                <button class="btn btn-ghost btn-sm" onclick="GKMentorApp.navigate('dashboard')">← Back to Dashboard</button>
+              </div>
+              <div class="empty-state">No feedback available yet.</div>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    const data = state.feedbackData;
+    const hasValidSentiment = data.validSentimentRecords >= 10;
+    const overallPosPercent = data.validSentimentRecords > 0 ? Math.round((data.totalPositive / data.validSentimentRecords) * 100) : 0;
+    const overallNeuPercent = data.validSentimentRecords > 0 ? Math.round((data.totalNeutral / data.validSentimentRecords) * 100) : 0;
+    const overallNegPercent = data.validSentimentRecords > 0 ? Math.round((data.totalNegative / data.validSentimentRecords) * 100) : 0;
+
+    let avgFeedback = data.totalStudents > 0 ? (data.totalFeedback / data.totalStudents).toFixed(1) : 0;
+
+    // Summary Cards
+    let summaryHtml = `
+      <div class="sc-stats-bento" style="margin-bottom: 2rem; grid-template-columns: repeat(${hasValidSentiment ? 4 : 3}, 1fr);">
+        <div class="sc-stat">
+          <div class="sc-stat-label">Total Feedback</div>
+          <div class="sc-stat-val">${data.totalFeedback}</div>
+        </div>
+        <div class="sc-stat">
+          <div class="sc-stat-label">Total Students</div>
+          <div class="sc-stat-val">${data.totalStudents}</div>
+        </div>
+        ${hasValidSentiment ? `
+        <div class="sc-stat">
+          <div class="sc-stat-label">Positive Feedback</div>
+          <div class="sc-stat-val" style="color: #27ae60;">${overallPosPercent}%</div>
+        </div>` : ''}
+        <div class="sc-stat">
+          <div class="sc-stat-label">Avg / Student</div>
+          <div class="sc-stat-val">${avgFeedback}</div>
+        </div>
+      </div>
+    `;
+
+    // Recent Feedback
+    const isRecentExpanded = state.expandedSections['recentFeedback'] !== false; // Default true
+    let recentHtml = `
+      <div class="qv2-card" style="margin-bottom: 2rem;">
+        <div class="section-header" style="margin-bottom: 1rem; cursor: pointer; display: flex; justify-content: space-between; align-items: center;" onclick="GKMentorApp.toggleSection('recentFeedback')">
+          <h3 style="margin: 0;">Recent Feedback</h3>
+          <div style="font-size: 1rem; color: #888;">${isRecentExpanded ? '▲' : '▼'}</div>
+        </div>
+        ${isRecentExpanded ? `
+        <table style="width: 100%; border-collapse: collapse; font-size: 0.85rem; text-align: left;">
+          <thead>
+            <tr style="border-bottom: 1px solid #eee;">
+              <th style="padding: 0.5rem; color: #888;">Student</th>
+              <th style="padding: 0.5rem; color: #888;">Date</th>
+              <th style="padding: 0.5rem; color: #888;">Feedback</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${data.recentFeedback.map(e => `
+              <tr style="border-bottom: 1px solid #f9f9f9;">
+                <td style="padding: 0.5rem; text-transform: capitalize; font-weight: 600;">${e.userId}</td>
+                <td style="padding: 0.5rem; color: #999;">${e.date ? new Date(e.date).toLocaleDateString() : ''}</td>
+                <td style="padding: 0.5rem;">
+                  <div>${e.text}</div>
+                  <div style="font-size: 0.7rem; color: #aaa; margin-top: 4px;">
+                    <span style="padding: 2px 6px; border-radius: 4px; background: ${e.sentiment==='Positive'?'#e8f5e9':e.sentiment==='Negative'?'#ffebee':e.sentiment==='Neutral'?'#fff8e1':'#f5f5f5'}; color: ${e.sentiment==='Positive'?'#2e7d32':e.sentiment==='Negative'?'#c62828':e.sentiment==='Neutral'?'#f39c12':'#777'};">
+                      ${e.sentiment}
+                    </span>
+                    <span style="margin-left: 8px;">Source: ${e.source}</span>
+                  </div>
+                </td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+        ` : ''}
+      </div>
+    `;
+
+    // Student Analysis
+    const sq = state.feedbackSearchQuery || '';
+    const filteredStudents = data.studentMetrics.filter(s => s.userId.toLowerCase().includes(sq));
+
+    let studentsHtml = `
+      <div class="qv2-card" style="margin-bottom: 2rem;">
+        <div class="section-header" style="margin-bottom: 1rem;">
+          <h3>Student-wise Analysis</h3>
+          <input type="text" placeholder="Search Student..." value="${sq}" oninput="GKMentorApp.updateFeedbackSearch(this.value)" style="padding: 0.4rem 0.8rem; border-radius: 20px; border: 1px solid #ccc; font-family: inherit; font-size: 0.85rem;" />
+        </div>
+        <table style="width: 100%; border-collapse: collapse; font-size: 0.9rem; text-align: left;">
+          <thead>
+            <tr style="border-bottom: 1px solid #eee;">
+              <th style="padding: 0.75rem; color: #888;">Student Name</th>
+              <th style="padding: 0.75rem; color: #888;">Feedback Count</th>
+              <th style="padding: 0.75rem; color: #888;">Positive Score</th>
+              <th style="padding: 0.75rem; color: #888;">Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${filteredStudents.map(s => {
+              const isExpanded = state.expandedStudentId === s.userId;
+              let statusColor = '#777';
+              let statusBg = '#f5f5f5';
+              if (s.status === 'Excellent') { statusColor = '#2e7d32'; statusBg = '#e8f5e9'; }
+              if (s.status === 'Good') { statusColor = '#1976d2'; statusBg = '#e3f2fd'; }
+              if (s.status === 'Average') { statusColor = '#f39c12'; statusBg = '#fff8e1'; }
+              if (s.status === 'Needs Attention') { statusColor = '#c62828'; statusBg = '#ffebee'; }
+              
+              return `
+                <tr style="border-bottom: 1px solid #eee; cursor: pointer; transition: background 0.2s;" onclick="GKMentorApp.toggleStudentDetails('${s.userId}')" onmouseover="this.style.background='#fdfbf7'" onmouseout="this.style.background='transparent'">
+                  <td style="padding: 0.75rem; text-transform: capitalize; font-weight: 700; color: var(--m-primary);">${s.userId} ${isExpanded ? '🔽' : '▶️'}</td>
+                  <td style="padding: 0.75rem; font-weight: 600;">${s.feedbackCount}</td>
+                  <td style="padding: 0.75rem;">${s.positivePercentage !== null ? s.positivePercentage + '%' : 'N/A'}</td>
+                  <td style="padding: 0.75rem;">
+                    <span style="padding: 4px 8px; border-radius: 12px; font-size: 0.75rem; font-weight: 800; background: ${statusBg}; color: ${statusColor};">
+                      ${s.status}
+                    </span>
+                  </td>
+                </tr>
+                ${isExpanded ? `
+                <tr style="background: #fdfbf7;">
+                  <td colspan="4" style="padding: 1rem;">
+                    <div style="font-size: 0.85rem; padding-left: 1rem; border-left: 3px solid var(--m-accent);">
+                      <strong>Detailed Feedback Records:</strong>
+                      <ul style="margin-top: 0.5rem; padding-left: 1rem;">
+                        ${s.entries.map(e => `
+                          <li style="margin-bottom: 0.5rem;">
+                            <div style="color: #666; font-size: 0.75rem;">${e.source} ${e.date ? '(' + new Date(e.date).toLocaleDateString() + ')' : ''}</div>
+                            <div>"${e.text}"</div>
+                            <div style="font-size: 0.7rem; font-weight: 600; color: ${e.sentiment==='Positive'?'#2e7d32':e.sentiment==='Negative'?'#c62828':'#888'};">Sentiment: ${e.sentiment}</div>
+                          </li>
+                        `).join('')}
+                      </ul>
+                    </div>
+                  </td>
+                </tr>
+                ` : ''}
+              `;
+            }).join('')}
+            ${filteredStudents.length === 0 ? `<tr><td colspan="4" style="padding: 1rem; text-align: center; color: #888;">No students found matching your search.</td></tr>` : ''}
+          </tbody>
+        </table>
+      </div>
+    `;
+
+    // Overall Analysis & Comparison Insights
+    let overallHtml = '';
+    let comparisonHtml = '';
+
+    if (hasValidSentiment && data.studentMetrics.filter(s => s.status !== 'Insufficient Data').length >= 3) {
+      overallHtml = `
+        <div class="qv2-card" style="margin-bottom: 2rem;">
+          <div class="section-header" style="margin-bottom: 1rem;">
+            <h3>Overall Feedback Analysis</h3>
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 1rem;">
+            <div>
+              <div style="display: flex; justify-content: space-between; font-size: 0.85rem; font-weight: 600; margin-bottom: 4px;">
+                <span>Positive</span><span>${overallPosPercent}%</span>
+              </div>
+              <div class="qv2-meter"><div class="qv2-fill" style="width: ${overallPosPercent}%; background: #27ae60;"></div></div>
+            </div>
+            <div>
+              <div style="display: flex; justify-content: space-between; font-size: 0.85rem; font-weight: 600; margin-bottom: 4px;">
+                <span>Neutral</span><span>${overallNeuPercent}%</span>
+              </div>
+              <div class="qv2-meter"><div class="qv2-fill" style="width: ${overallNeuPercent}%; background: #f39c12;"></div></div>
+            </div>
+            <div>
+              <div style="display: flex; justify-content: space-between; font-size: 0.85rem; font-weight: 600; margin-bottom: 4px;">
+                <span>Negative</span><span>${overallNegPercent}%</span>
+              </div>
+              <div class="qv2-meter"><div class="qv2-fill" style="width: ${overallNegPercent}%; background: #e74c3c;"></div></div>
+            </div>
+          </div>
+        </div>
+      `;
+
+      const validStudents = data.studentMetrics.filter(s => s.status !== 'Insufficient Data');
+      const topStudents = [...validStudents].sort((a,b) => b.positivePercentage - a.positivePercentage).slice(0, 5);
+      const bottomStudents = [...validStudents].sort((a,b) => a.positivePercentage - b.positivePercentage).slice(0, 5);
+
+      comparisonHtml = `
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 2rem;">
+          <div class="qv2-card">
+            <div class="section-header" style="margin-bottom: 1rem;">
+              <h3>Top Positive Students</h3>
+            </div>
+            <ul style="list-style: none; padding: 0; margin: 0; font-size: 0.9rem;">
+              ${topStudents.map(s => `
+                <li style="display: flex; justify-content: space-between; padding: 0.5rem 0; border-bottom: 1px solid #eee;">
+                  <span style="text-transform: capitalize; font-weight: 600;">${s.userId}</span>
+                  <span style="font-weight: 800; color: #27ae60;">${s.positivePercentage}%</span>
+                </li>
+              `).join('')}
+            </ul>
+          </div>
+          <div class="qv2-card">
+            <div class="section-header" style="margin-bottom: 1rem;">
+              <h3>Needs Attention</h3>
+            </div>
+            <ul style="list-style: none; padding: 0; margin: 0; font-size: 0.9rem;">
+              ${bottomStudents.map(s => `
+                <li style="display: flex; justify-content: space-between; padding: 0.5rem 0; border-bottom: 1px solid #eee;">
+                  <span style="text-transform: capitalize; font-weight: 600;">${s.userId}</span>
+                  <span style="font-weight: 800; color: #e74c3c;">${s.positivePercentage}%</span>
+                </li>
+              `).join('')}
+            </ul>
+          </div>
+        </div>
+      `;
+    } else {
+      comparisonHtml = `
+        <div class="qv2-card" style="margin-bottom: 2rem; text-align: center; color: #888; font-weight: 600;">
+          More feedback data is required for comparison insights and overall sentiment analysis.
+        </div>
+      `;
+    }
+
+    return `
+      <div class="screen screen-mentor">
+        ${renderMentorHeader()}
+        <div class="screen-full-col">
+          <div class="mentor-content">
+            <div class="detail-nav-row" style="margin-bottom: 2rem;">
+              <button class="btn btn-ghost btn-sm" onclick="GKMentorApp.navigate('dashboard')">← Back to Dashboard</button>
+            </div>
+            
+            <div class="mentor-page-header" style="margin-bottom: 2rem;">
+              <h2>Feedback Dashboard</h2>
+              <p>Analyze student sentiment and identify areas for curriculum improvement.</p>
+            </div>
+
+            ${summaryHtml}
+            ${recentHtml}
+            ${studentsHtml}
+            ${overallHtml}
+            ${comparisonHtml}
+            
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+
   return {
     init, selectStudent: viewStudent, backToDashboard,
     viewHolisticDetail,
@@ -1947,6 +2352,7 @@ const GKMentorApp = (() => {
     navigate, renderLiveView, generateAndSaveHQ,
     sendNarayanaQuery,
     toggleMute: (btn) => GKVoice.toggle(btn),
+    loadFeedbackDashboard, toggleStudentDetails, updateFeedbackSearch,
     logout
   };
 

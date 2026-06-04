@@ -1317,7 +1317,7 @@ const GKApp = (() => {
       const cls = isDone ? 'tt-done' : 'tt-active';
 
       // Assessment tab ALWAYS shows, but is locked if subtopics are NOT done OR already attempted
-      const isAssessibleModule = m.topicId === 'gravity'; // Only for gravity as per current config
+      const isAssessibleModule = true; // Enabled for all modules
       const hasAssessTab = isAssessibleModule;
       const isAlreadyAssessed = isCompleted;
       const isAssessLocked = !allSubtopicsDone || isAlreadyAssessed;
@@ -1343,7 +1343,7 @@ const GKApp = (() => {
           </div>
           ${hasAssessTab ? `
             <div class="tt-assess-tab ${isAssessLocked ? 'tt-assess-locked' : ''}"
-                 ${isAssessLocked ? `title="${isAlreadyAssessed ? 'Assessment already completed' : 'Complete all subtopics first'}"` : `onclick="event.stopPropagation(); GKApp.openTopicQuickCheck('${m.subjectId}','${m.topicId}')"`}>
+                 ${isAssessLocked ? `title="${isAlreadyAssessed ? 'Assessment already completed' : 'Complete all subtopics first'}"` : `onclick="event.stopPropagation(); GKApp.startModuleAssessment(${m._origIdx})"`}>
               <span class="tt-assess-icon">${isAlreadyAssessed ? '✅' : (isAssessLocked ? '🔒' : '📝')}</span>
               <span class="tt-assess-label">Assessment</span>
             </div>` : ''}
@@ -2478,13 +2478,6 @@ const GKApp = (() => {
     }
 
     if (state.lessonPhase === 'deep-dive') {
-      if (flow.finalAssessment && flow.finalAssessment.length) {
-        GKAssessment.init(flow.finalAssessment);
-        state._lessonFlowMode = 'final';
-        state._isFinalAssessment = false;
-        navigate('assessment');
-        return;
-      }
       state.lessonPhase = 'project';
       if (!flow.project) {
         completeLessonFlow();
@@ -2536,16 +2529,23 @@ const GKApp = (() => {
       _startLessonFlowAt(subtopic, state.conceptIdx + 1, 'hook');
       return;
     }
+    
+    state._afterSubtopicFeedback = 'lessonFlow-mid';
+    const m = state.modules[state.activeModuleIdx];
+    state._pendingTopicKey = m.topicId;
+    state._pendingSubtopicKey = m.topicId + '-' + subtopic.id;
+    navigate('subtopicFeedback');
+  }
+
+  function _continueLessonFlowAfterFeedback() {
+    const subtopic = _getCurrentSubtopic();
+    if (!_hasLessonFlow(subtopic)) return;
+    const flow = subtopic.lessonFlow;
+    
     if (flow.deepDive) {
       state.lessonPhase = 'deep-dive';
       state.phase = 'concepts';
       navigate('learning');
-      return;
-    }
-    if (flow.finalAssessment && flow.finalAssessment.length) {
-      GKAssessment.init(flow.finalAssessment);
-      state._lessonFlowMode = 'final';
-      navigate('assessment');
       return;
     }
     if (flow.project) {
@@ -2578,7 +2578,35 @@ const GKApp = (() => {
     state._lessonFlowMode = null;
     state.phase = 'concepts';
     state._lastAssessmentScore = state._lastAssessmentScore ?? 100;
-    afterGame();
+    
+    const m = state.modules[state.activeModuleIdx];
+    if (!m) {
+      navigate('subtopics');
+      return;
+    }
+    const subtopic = _getCurrentSubtopic();
+    if (subtopic) {
+      const subtopicKey = m.topicId + '-' + subtopic.id;
+      GKStore.recordSubtopicComplete(subtopicKey);
+      GKStore.saveSubtopicScore(state.user.id, subtopicKey, 100, 100);
+    }
+    _maybeMarkTopicComplete(m);
+    _refreshUserFromStore();
+    
+    const profile = GKStore.getUserProfile(state.user.id) || {};
+    const session = GKStore.getSession() || {};
+    const doneSet = new Set([...(profile.completedSubtopics || []), ...(session.completedSubtopics || [])]);
+    const topicData = GKRecommender.getTopicData(m.subjectId, m.topicId);
+    
+    if (topicData) {
+      const allSts = topicData.topic.subtopics.filter(st => st.mandatory !== false);
+      const allDone = allSts.every(st => doneSet.has(m.topicId + '-' + st.id));
+      if (allDone) {
+        startChallenge();
+        return;
+      }
+    }
+    navigate('subtopics');
   }
 
   // ---- SCREEN 4: Learning ----
@@ -4034,11 +4062,31 @@ const GKApp = (() => {
     navigate('subtopics');
   }
 
+  function _getChallengeQuestions(topicData) {
+    let allQ = topicData.topic.subtopics.flatMap(st => st.assessment || []);
+    if (allQ.length < 1) {
+      const tName = topicData.topic.name;
+      const pool = [
+        { question: `What is a core principle of ${tName}?`, type: 'mcq', options: ['Option A', 'Option B', 'Option C', 'Option D'], correct: 0, explanation: `The core principle involves Option A.` },
+        { question: `True or False: ${tName} is fundamental to this subject area.`, type: 'true-false', options: ['True', 'False'], correct: 0 },
+        { question: `Complete this sentence: ${tName} allows us to explore ___. (Hint: "knowledge")`, type: 'fill-blank', correct: ['knowledge', 'concepts'], explanation: 'Accurate terminology is key.' },
+        { question: `Which of the following is NOT related to ${tName}?`, type: 'mcq', options: ['Concept X', 'Concept Y', 'Unrelated Concept', 'Concept Z'], correct: 2, explanation: `The unrelated concept is not part of ${tName}.` },
+        { question: `True or False: The concepts in ${tName} are only theoretical and have no practical application.`, type: 'true-false', options: ['True', 'False'], correct: 1, explanation: 'False! Most concepts here have strong practical components.' }
+      ];
+      allQ = [...pool].sort(() => 0.5 - Math.random()).slice(0, 5);
+    }
+    return allQ.slice(0, 5);
+  }
+
+  function startModuleAssessment(idx) {
+    state.activeModuleIdx = idx;
+    startChallenge();
+  }
+
   function startChallenge() {
     const m = state.modules[state.activeModuleIdx];
     const topicData = GKRecommender.getTopicData(m.subjectId, m.topicId);
-    const allQ = topicData.topic.subtopics.flatMap(st => st.assessment);
-    GKAssessment.init(allQ);
+    GKAssessment.init(_getChallengeQuestions(topicData));
     state._isFinalAssessment = false;
     navigate('assessment');
   }
@@ -4046,8 +4094,7 @@ const GKApp = (() => {
   function retakeChallenge() {
     const m = state.modules[state.activeModuleIdx];
     const topicData = GKRecommender.getTopicData(m.subjectId, m.topicId);
-    const allQ = topicData.topic.subtopics.flatMap(st => st.assessment);
-    GKAssessment.init(allQ);
+    GKAssessment.init(_getChallengeQuestions(topicData));
     state._isFinalAssessment = false;
     navigate('assessment');
   }
@@ -4340,6 +4387,7 @@ const GKApp = (() => {
     _maybeMarkTopicComplete(m);
     _refreshUserFromStore();
     localStorage.setItem('gk_sync_ping', Date.now().toString());
+    state._pendingTopicKey = m.topicId;
     state._pendingSubtopicKey = subtopicKey;
     state.subtopicFeedbackResponses = {};
     state.conceptIdx = 0;
@@ -4509,17 +4557,25 @@ const GKApp = (() => {
     };
 
     if (state._pendingSubtopicKey) {
-      GKStore.saveSubtopicFeedback(state.user.id, state._pendingSubtopicKey, feedbackData);
+      GKStore.saveSubtopicFeedback(state.user.id, state._pendingTopicKey, state._pendingSubtopicKey, feedbackData);
     }
     const xp = GKXPManager.awardXP(state.user.id, 'feedbackSubmitted');
     if (xp > 0 && state.user) state.user.totalXP = (state.user.totalXP || 0) + xp;
-    state.subtopicFeedbackResponses = {};
-    navigate('subtopics');
+    _finishSubtopicFeedback();
   }
 
   function skipSubtopicFeedback() {
+    _finishSubtopicFeedback();
+  }
+
+  function _finishSubtopicFeedback() {
     state.subtopicFeedbackResponses = {};
-    navigate('subtopics');
+    if (state._afterSubtopicFeedback === 'lessonFlow-mid') {
+      state._afterSubtopicFeedback = null;
+      _continueLessonFlowAfterFeedback();
+    } else {
+      navigate('subtopics');
+    }
   }
 
   // ---- Module Feedback Handlers ----
@@ -5541,6 +5597,9 @@ const GKApp = (() => {
     const td = GKRecommender.getTopicData(subjectId, topicId);
     if (!td) return;
 
+    const modIdx = state.modules.findIndex(m => m.subjectId === subjectId && m.topicId === topicId);
+    if (modIdx !== -1) state.activeModuleIdx = modIdx;
+
     // Check if user already has a result for this (Single Attempt Limit)
     const results = GKStore.getQuickCheckResults(state.user.id) || [];
     const existing = results.find(r => r.subjectId === subjectId && r.topicId === topicId);
@@ -5554,41 +5613,7 @@ const GKApp = (() => {
     // Try to get assessment questions from subtopics first
     let qs = td.topic.subtopics.flatMap(st => st.assessment || []);
 
-    // Specific override for Gravity topic assessment as per user request
-    if (topicId === 'gravity') {
-      qs = [
-        {
-          question: "What keeps satellites in orbit?",
-          type: "mcq",
-          options: ["Rocket engines always running", "Gravity + sideways velocity", "Anti-gravity shields", "Magnetic fields"],
-          correct: 1,
-          explanation: "Gravity pulls down, velocity pushes forward — they balance!"
-        },
-        {
-          question: "Arrange these planets in order of their gravitational pull (Strongest to Weakest):",
-          type: "ordering",
-          options: ["Jupiter", "Earth", "Mars", "Moon"],
-          correct: ["Jupiter", "Earth", "Mars", "Moon"],
-          explanation: "Jupiter has the most mass, followed by Earth, Mars, and finally the Moon."
-        },
-        {
-          question: "Complete this sentence: The value of acceleration due to gravity on Earth is approximately ____ m/s².",
-          type: "fill-blank",
-          correct: ["9.8", "9.81"],
-          explanation: "Earth's gravity pulls objects down at an acceleration of 9.8 m/s²."
-        },
-        {
-          question: "Draw or diagram how gravity pulls objects toward the center of the Earth. Upload a picture of your drawing.",
-          type: "file-upload",
-          explanation: "Your mentor will review your diagram to ensure you understand gravitational direction."
-        },
-        {
-          question: "Imagine you are an astronaut on the International Space Station. Describe how gravity affects you and the station in 2-3 sentences.",
-          type: "long-answer",
-          explanation: "You are both in constant free fall around the Earth, which makes it feel like you are floating (weightlessness), even though gravity is still pulling you."
-        }
-      ];
-    } else if (qs.length < 1) {
+    if (qs.length < 1) {
       // If no embedded questions, generate mixed-type demo questions (Variety)
       const tName = td.topic.name;
 
@@ -5640,7 +5665,7 @@ const GKApp = (() => {
             <p class="qc-submitted-sub">Your responses have been recorded. Your mentor will review your answers.</p>
           </div>
           <div class="qc-footer">
-            <button class="btn qc-done-btn" onclick="GKApp.closeTopicQuickCheck()">Done</button>
+            <button class="btn qc-done-btn" onclick="GKApp.closeTopicQuickCheckAndFeedback()">Continue to Module Feedback →</button>
           </div>
         </div>`
       : `
@@ -5792,6 +5817,13 @@ const GKApp = (() => {
       setTimeout(() => overlay.remove(), 220);
     }
     _quickCheck = null;
+  }
+
+  function closeTopicQuickCheckAndFeedback() {
+    closeTopicQuickCheck();
+    if (state.activeModuleIdx !== undefined && state.activeModuleIdx !== null) {
+      goToModuleFeedback();
+    }
   }
 
   // ---- Floating Krishna Chat ----
@@ -5992,7 +6024,7 @@ const GKApp = (() => {
 
     closeReviewPopup();
     _showToast("✅ Submitted to Mentor");
-    render();
+    navigate('feedback');
   }
 
   function _showToast(message) {
@@ -6022,7 +6054,7 @@ const GKApp = (() => {
     // Mentor Review Submission popup
     openReviewPopup, closeReviewPopup, submitPopupReflection,
     // Topic Quick-Check Modal
-    openTopicQuickCheck, onQCAnswer, onQCOrdering, submitTopicQuickCheck, closeTopicQuickCheck,
+    openTopicQuickCheck, onQCAnswer, onQCOrdering, submitTopicQuickCheck, closeTopicQuickCheck, closeTopicQuickCheckAndFeedback, startModuleAssessment,
     // Demo Override
     toggleDemoOverride, completeDay,
     // Timetable drag-and-drop

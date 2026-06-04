@@ -7,15 +7,25 @@
     " Mathematics & Science lesson content comes from GET /api/content",
     " (published/Grade_6). Topic IDs below must match data/topics.js.",
     "",
-    "   Mathematics : fractions  → API folder Symmetry",
-    "   Science     : gravity    → API folder The_Wonderful_World_of_Science",
+    "   Mathematics : fractions | data-handling | fractions-advanced | real-numbers",
+    "   Science     : gravity | methods-of-separation",
+    "   Social      : ancient-civilizations | maps-and-geography",
+    "   Social Sci  : civics",
+    "   Kannada     : kannada-basics",
+    "   Wellness    : yoga | meditation",
+    "   Next-path   : bhagavadgita | sanskrit | english | ai-training |",
+    "                 young-scientist | art-craft | pe",
     "",
-    " After editing, restart the server or POST /api/config/reload",
+    " After editing, apply changes in ONE of these ways:",
+    "   1. Restart the server / container  (changes auto-load on boot)",
+    "   2. Call POST /api/config/reload     (hot-reload, no restart needed)",
     "",
     " PUBLISHED FLAG:",
     "   published: true  → topic is reviewed and shown in student timetable",
     "   published: false → topic is hidden from timetable (not yet reviewed)",
     "   To show a new topic: set published to true and reload the server.",
+    "",
+    " To find ALL available topic IDs call: GET /api/config/topics",
     "============================================================="
   ],
 
@@ -23,23 +33,53 @@
     {
       "id": "path-grade6-core",
       "name": "Grade 6 — Core Curriculum",
-      "description": "Grade 6 mathematics and science via Gurukul content API.",
+      "description": "Standard mandatory curriculum covering all core Grade 6 subjects.",
       "grade": "6",
       "isActive": true,
       "topics": [
-        { "topicId": "fractions", "order": 1, "required": true, "published": true },
-        { "topicId": "gravity",   "order": 2, "required": true, "published": true }
+        { "topicId": "fractions",              "order": 1,  "required": true, "published": true },
+        { "topicId": "data-handling",          "order": 2,  "required": true, "published": true },
+        { "topicId": "gravity",                "order": 3,  "required": true, "published": true },
+        { "topicId": "methods-of-separation",  "order": 4,  "required": true, "published": true },
+        { "topicId": "ancient-civilizations",  "order": 5,  "required": true, "published": true },
+        { "topicId": "maps-and-geography",     "order": 6,  "required": true, "published": true },
+        { "topicId": "civics",                 "order": 7,  "required": true, "published": true },
+        { "topicId": "kannada-basics",         "order": 8,  "required": true, "published": true },
+        { "topicId": "yoga",                   "order": 9,  "required": false,"published": true },
+        { "topicId": "meditation",             "order": 10, "required": false,"published": true }
       ]
     },
     {
       "id": "path-grade6-advanced",
       "name": "Grade 6 — Advanced Track",
-      "description": "Same API-backed math and science modules.",
+      "description": "Extended path for fast learners — includes advanced maths and extra science.",
       "grade": "6",
       "isActive": true,
       "topics": [
-        { "topicId": "fractions", "order": 1, "required": true, "published": true },
-        { "topicId": "gravity",   "order": 2, "required": true, "published": true }
+        { "topicId": "fractions",              "order": 1,  "required": true, "published": true },
+        { "topicId": "fractions-advanced",     "order": 2,  "required": true, "published": true },
+        { "topicId": "real-numbers",           "order": 3,  "required": true, "published": true },
+        { "topicId": "data-handling",          "order": 4,  "required": true, "published": true },
+        { "topicId": "gravity",                "order": 5,  "required": true, "published": true },
+        { "topicId": "methods-of-separation",  "order": 6,  "required": true, "published": true },
+        { "topicId": "ancient-civilizations",  "order": 7,  "required": true, "published": true },
+        { "topicId": "civics",                 "order": 8,  "required": true, "published": true },
+        { "topicId": "kannada-basics",         "order": 9,  "required": true, "published": true },
+        { "topicId": "yoga",                   "order": 10, "required": false,"published": true }
+      ]
+    },
+    {
+      "id": "path-wellness-focus",
+      "name": "Wellness Focus Path",
+      "description": "For students who need a lighter academic load with emphasis on wellness.",
+      "grade": "6",
+      "isActive": true,
+      "topics": [
+        { "topicId": "fractions",    "order": 1, "required": true, "published": true },
+        { "topicId": "gravity",      "order": 2, "required": true, "published": true },
+        { "topicId": "yoga",         "order": 3, "required": true, "published": true },
+        { "topicId": "meditation",   "order": 4, "required": true, "published": true },
+        { "topicId": "kannada-basics","order": 5,"required": false,"published": true }
       ]
     }
   ],

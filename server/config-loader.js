@@ -61,6 +61,7 @@ function syncConfig() {
   // ── Student assignments ───────────────────────────────────────────────────
   (config.studentAssignments || []).forEach(a => {
     if (!a.studentId || !a.pathId) return;
+    // Tarun's safer version: wrap in try/catch so invalid student IDs don't crash startup
     try {
       LPQ.assignStudentToPath(a.studentId, a.pathId, a.assignedBy || null);
       assignCount++;

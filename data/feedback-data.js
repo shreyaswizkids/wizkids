@@ -9,6 +9,7 @@
 // ============================================================
 
 // ---- Quick post-subtopic feedback (2 questions) ----
+// Tarun's version: rich rating/choice questions with emoji options
 const GK_SUBTOPIC_FEEDBACK_QUESTIONS = [
   {
     id: "understood",
@@ -31,10 +32,21 @@ const GK_SUBTOPIC_FEEDBACK_QUESTIONS = [
       { value: "fun",       label: "Fun! 🎉"           },
       { value: "very_fun",  label: "Super fun! 🎮🔥"  }
     ]
-  }
+  },
+  // Aditya's additional open-text questions for dashboard analysis
+  {
+    id: "enjoyedMost",
+    question: "What did you enjoy the most?",
+    type: "text",
+  },
+  {
+    id: "improvementPoint",
+    question: "What is the improvement point you suggest?",
+    type: "text",
+  },
 ];
 
-// ---- Post-module feedback (3 questions) ----
+// ---- Post-module feedback (Tarun's rich + Aditya's text questions) ----
 const GK_MODULE_FEEDBACK_QUESTIONS = [
   {
     id: "module_clarity",
@@ -67,10 +79,21 @@ const GK_MODULE_FEEDBACK_QUESTIONS = [
       { value: "assessment",  label: "Quiz strategies 📊"          },
       { value: "nothing",     label: "I'm good — all clear! ✅"   }
     ]
-  }
+  },
+  // Aditya's open-text questions (needed by /api/feedback/all dashboard)
+  {
+    id: "enjoyedMost",
+    question: "What did you enjoy the most about this module?",
+    type: "text",
+  },
+  {
+    id: "improvementPoint",
+    question: "What is your improvement point?",
+    type: "text",
+  },
 ];
 
-// ---- End-of-session feedback (existing) ----
+// ---- End-of-session feedback (Tarun's rich + Aditya's text questions) ----
 const GK_FEEDBACK_QUESTIONS = [
   {
     id: "ai_helpful",
@@ -113,5 +136,16 @@ const GK_FEEDBACK_QUESTIONS = [
       { value: "assessment", label: "The challenge quiz 📊"  },
       { value: "acharya",    label: "Ask Acharya help 🤖"   }
     ]
-  }
+  },
+  // Aditya's open-text questions (needed by /api/feedback/all dashboard)
+  {
+    id: "enjoyedMost",
+    question: "What did you enjoy the most in today's session?",
+    type: "text",
+  },
+  {
+    id: "improvementPoint",
+    question: "What is one thing you want to improve or understand better?",
+    type: "text",
+  },
 ];

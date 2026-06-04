@@ -39,6 +39,7 @@ const GKDatabase = (() => {
     learningPaths:        {},   // { [pathId]: { id, name, grade, topics[], ... } }
     studentLearningPaths: {},   // { [userId]: [{ pathId, pathName, isActive, ... }] }
     branding:             null   // white-label from config/branding.json
+
   };
 
   let _ready = false;
@@ -75,6 +76,7 @@ const GKDatabase = (() => {
       _c.branding = snapshot.branding;
       if (typeof GKBranding !== 'undefined') GKBranding.initFromSnapshot(snapshot);
     }
+
   }
 
   /** Replace all keys in target with source, removing stale entries. */
@@ -113,12 +115,14 @@ const GKDatabase = (() => {
       if (snapshot && snapshot.ok === false) {
         throw new Error(snapshot.error || 'Server error');
       }
+
       _merge(snapshot);
       _ready = true;
       console.log('[GKDatabase] cache loaded from server');
     } catch (e) {
       console.error('[GKDatabase] init failed — app may not work correctly:', e);
       _showServerUnavailable(e.message || 'Network error');
+
     }
   }
 

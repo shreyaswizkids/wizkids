@@ -5,6 +5,7 @@ const ROOT = path.resolve(__dirname, '..');
 // Load .env first, then env.local (fills gaps — common when key lives in env.local only)
 dotenv.config({ path: path.join(ROOT, '.env') });
 dotenv.config({ path: path.join(ROOT, 'env.local') });
+
 // ============================================================
 // SERVER: index.js
 // Express entry point for Gurukul.
@@ -14,6 +15,7 @@ dotenv.config({ path: path.join(ROOT, 'env.local') });
 // Serves:
 //   /          → static files from wizkids/  (student.html, mentor.html, etc.)
 //   /api/*     → REST API routes (server/routes.js)
+//   /api-docs  → Swagger UI (Aditya's API documentation)
 // ============================================================
 
 const express = require('express');
@@ -53,6 +55,16 @@ app.use(express.static(STATIC));
 // API routes
 app.use('/api', apiRoutes);
 
+// Swagger UI (Aditya's API documentation)
+try {
+  const swaggerUi   = require('swagger-ui-express');
+  const swaggerSpec = require('../swagger');
+  app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+  console.log(`[GKServer] Swagger UI available at http://localhost:${PORT}/api-docs`);
+} catch (e) {
+  console.warn('[GKServer] Swagger UI not available (run npm install):', e.message);
+}
+
 // SPA fallback: serve student.html for unknown paths (mentor.html is explicit)
 app.get('*', (req, res) => {
   res.sendFile(path.join(STATIC, 'student.html'));
@@ -65,6 +77,7 @@ const server = app.listen(PORT, '0.0.0.0', () => {
   console.log(`  Student  → http://localhost:${PORT}/student.html`);
   console.log(`  Mentor   → http://localhost:${PORT}/mentor.html`);
   console.log(`  Branding → http://localhost:${PORT}/admin/school-branding.html (admin only)`);
+  console.log(`  API Docs → http://localhost:${PORT}/api-docs`);
 });
 
 server.on('error', (err) => {
