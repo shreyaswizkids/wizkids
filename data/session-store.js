@@ -688,6 +688,26 @@ const GKStore = (() => {
       .map(t => t.topicId);
   }
 
+  /** Added by Keerthi for topic publish/unpublish feature in learning paths.
+   * Returns a Set of topicIds where isPublished = true
+   * for the student's currently active learning path.
+   *
+   * Called every time the timetable is built — always reflects
+   * the latest is_published value from SQLite (via /api/init cache).
+   *
+   * Only topics in this Set are shown in the student timetable.
+   * All others are hidden until published.
+   */
+  function getPublishedTopicIds(userId) {
+    const details = getStudentLearningPathDetails(userId);
+    if (!details) return new Set();
+    return new Set(
+      details.topics
+        .filter(t => t.isPublished)
+        .map(t => t.topicId)
+    );
+  }
+
   // ── Public API ────────────────────────────────────────────────────────────
   // Identical surface to the previous sql.js version.
 
@@ -714,6 +734,6 @@ const GKStore = (() => {
     getBadges, saveBadges, getStreak, saveStreak,
     saveMentorMoodLog, getMentorMoodLog,
     getStudentLearningPath, getStudentLearningPathDetails,
-    getAllLearningPaths, getStudentTopicIds
+    getAllLearningPaths, getStudentTopicIds, getPublishedTopicIds
   };
 })();

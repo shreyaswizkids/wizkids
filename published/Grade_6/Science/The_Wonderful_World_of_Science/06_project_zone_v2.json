@@ -1,0 +1,97 @@
+{
+  "title": "PROJECT ZONE: Choose Your Challenge",
+  "projects": [
+    {
+      "project_number": 1,
+      "project_level": "Easy Start",
+      "project_title": "My 5 Observations Notebook",
+      "project_objective": "Build the habit of noticing five safe things around you and writing one question for\neach.",
+      "difficulty": "Easy",
+      "skills_developed": [
+        "Clear writing",
+        "careful noticing",
+        "honesty"
+      ],
+      "submission_format": "Science journal or photo notebook"
+    },
+    {
+      "project_number": 2,
+      "project_level": "Little Explorer",
+      "project_title": "Why Wall at Home",
+      "project_objective": "Collect everyday why questions from family members and group them by place:\nkitchen, garden, sky, school bag.",
+      "difficulty": "Easy-Medium",
+      "skills_developed": [
+        "Communication",
+        "listening",
+        "sorting ideas\n\nWizkids Gurukula - Grade 6 Science Self-Study Lesson"
+      ],
+      "submission_format": "Poster, chart, or oral sharing"
+    },
+    {
+      "project_number": 3,
+      "project_level": "Thinking Builder",
+      "project_title": "Pen Mystery Investigation",
+      "project_objective": "Use the step-by-step science method to investigate why a pen or pencil is not working\nwell.",
+      "difficulty": "Medium",
+      "skills_developed": [
+        "Careful testing",
+        "honest recording",
+        "problem solving"
+      ],
+      "submission_format": "Flow chart, short report, or video"
+    },
+    {
+      "project_number": 4,
+      "project_level": "Real-Life Connector",
+      "project_title": "Science in My Kitchen",
+      "project_objective": "Find three safe kitchen events and frame one science question for each without doing\nunsafe experiments.",
+      "difficulty": "Medium",
+      "skills_developed": [
+        "Observation",
+        "family collaboration",
+        "responsible thinking"
+      ],
+      "submission_format": "Photo collage, written note, or PPT"
+    },
+    {
+      "project_number": 5,
+      "project_level": "Creative Maker",
+      "project_title": "Science Everywhere Poster",
+      "project_objective": "Create a colourful poster showing how science appears in nature, home, school, and\nsky.",
+      "difficulty": "Medium-Hard",
+      "skills_developed": [
+        "Creativity",
+        "clear explanation",
+        "visual communication"
+      ],
+      "submission_format": "Poster, drawing, or digital slide"
+    },
+    {
+      "project_number": 6,
+      "project_level": "Wise Presenter",
+      "project_title": "Question Circle with Friends",
+      "project_objective": "Discuss one science question with two or more friends and present how different\nobservations improved the answer.",
+      "difficulty": "Hard",
+      "skills_developed": [
+        "Teamwork",
+        "respectful speaking",
+        "critical thinking"
+      ],
+      "submission_format": "Group presentation, skit, or video\n\nWizkids Gurukula - Grade 6 Science Self-Study Lesson"
+    },
+    {
+      "project_number": 7,
+      "project_level": "Big Challenge",
+      "project_title": "Small Problem, Scientific Solution",
+      "project_objective": "Choose one safe school or home problem, investigate it step by step, and suggest a\nresponsible solution.",
+      "difficulty": "Advanced",
+      "skills_developed": [
+        "Leadership",
+        "wise decision-making",
+        "creativity",
+        "care for people/nature"
+      ],
+      "submission_format": "Report, model, PPT, demonstration, or debate"
+    }
+  ]
+}

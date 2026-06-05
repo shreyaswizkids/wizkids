@@ -37,6 +37,11 @@ const GK_TOPICS = {
           xp: 150,
           mandatory: true,
           moduleType: "standard",
+          // githubFolder: maps this topic to its content folder in the published/ directory.
+          // The folder name may differ from the topic name in topics.js.
+          // Used by startModule() in app.js to build the /api/content URL.
+          // To point to a different folder, update this value only — no other code changes needed.
+          githubFolder: "Symmetry", //Added by Keerthi
           subtopics: [
             // ---- EXP 1 · Introduction to Fractions (core, mandatory) ----
             {
@@ -1085,12 +1090,18 @@ const GK_TOPICS = {
       topics: [
         {
           id: "gravity",
-          name: "Gravity",
+          // name: "Gravity",
+          name: "The Wonderful World of Science", //Added by Keerthi
           description: "Discover the force that keeps us grounded and governs the universe",
           icon: "🍎",
           xp: 180,
           mandatory: true,
           moduleType: "standard",
+          // githubFolder: maps this topic to its content folder in the published/ directory.
+          // The folder name may differ from the topic name in topics.js.
+          // Used by startModule() in app.js to build the /api/content URL.
+          // To point to a different folder, update this value only — no other code changes needed.
+          githubFolder: "The_Wonderful_World_of_Science", //Added by Keerthi
           subtopics: [
             {
               id: "what-is-gravity",

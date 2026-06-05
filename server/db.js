@@ -295,6 +295,7 @@ const SCHEMA = `
     topic_id    TEXT NOT NULL,
     sort_order  INTEGER DEFAULT 0,
     is_required INTEGER DEFAULT 1,
+    is_published INTEGER DEFAULT 0,  -- 0 = not reviewed, 1 = reviewed & ready for student timetable
     PRIMARY KEY (path_id, topic_id)
   );
 
@@ -733,7 +734,7 @@ function buildInitSnapshot() {
   d.prepare(`SELECT * FROM learning_path_topics ORDER BY sort_order ASC`).all().forEach(r => {
     if (learningPaths[r.path_id]) {
       learningPaths[r.path_id].topics.push({
-        topicId: r.topic_id, order: r.sort_order, required: !!r.is_required
+        topicId: r.topic_id, order: r.sort_order, required: !!r.is_required,  isPublished: !!r.is_published   // sent to browser via /api/init — used to filter timetable
       });
     }
   });
@@ -1242,12 +1243,12 @@ const LPQ = {
   setLearningPathTopics(pathId, topics) {
     db().prepare(`DELETE FROM learning_path_topics WHERE path_id = ?`).run(pathId);
     const ins = db().prepare(`
-      INSERT INTO learning_path_topics (path_id, topic_id, sort_order, is_required)
-      VALUES (?, ?, ?, ?)
+      INSERT INTO learning_path_topics (path_id, topic_id, sort_order, is_required, is_published)
+      VALUES (?, ?, ?, ?, ?)
     `);
     db().transaction(() => {
       (topics || []).forEach((t, i) => {
-        ins.run(pathId, t.topicId, t.order ?? i, t.required !== false ? 1 : 0);
+        ins.run(pathId, t.topicId, t.order ?? i, t.required !== false ? 1 : 0, t.published === true  ? 1 : 0);  // reads "published" field from learning-paths.json
       });
     })();
   },
@@ -1300,7 +1301,7 @@ const LPQ = {
     if (!row) return null;
 
     const topics = db().prepare(`
-      SELECT lpt.topic_id, lpt.sort_order, lpt.is_required,
+      SELECT lpt.topic_id, lpt.sort_order, lpt.is_required, lpt.is_published,
              t.name AS topic_name, t.description, t.icon, t.xp, t.module_type,
              s.id   AS subject_id, s.name AS subject_name
       FROM   learning_path_topics lpt
@@ -1327,7 +1328,8 @@ const LPQ = {
         subjectId:   t.subject_id,
         subjectName: t.subject_name,
         order:       t.sort_order,
-        required:    !!t.is_required
+        required:    !!t.is_required,
+        isPublished: !!t.is_published   // used by getPublishedTopicIds() in session-store.js
       }))
     };
   },
@@ -1337,13 +1339,13 @@ const LPQ = {
     const paths = db().prepare(`SELECT * FROM learning_paths ORDER BY grade, name`).all();
     return paths.map(lp => {
       const topics = db().prepare(
-        `SELECT topic_id, sort_order, is_required FROM learning_path_topics WHERE path_id=? ORDER BY sort_order ASC`
+        `SELECT topic_id, sort_order, is_required, is_published FROM learning_path_topics WHERE path_id=? ORDER BY sort_order ASC`
       ).all(lp.id);
       return {
         id: lp.id, name: lp.name, description: lp.description,
         grade: lp.grade, isActive: !!lp.is_active,
         createdAt: lp.created_at, updatedAt: lp.updated_at,
-        topics: topics.map(t => ({ topicId: t.topic_id, order: t.sort_order, required: !!t.is_required }))
+        topics: topics.map(t => ({ topicId: t.topic_id, order: t.sort_order, required: !!t.is_required, isPublished: !!t.is_published  }))
       };
     });
   },

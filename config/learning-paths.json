@@ -22,6 +22,11 @@
     "                 young-scientist | art-craft | pe",
     "",
     " To find ALL available topic IDs call: GET /api/config/topics",
+    "",
+    " PUBLISHED FLAG: ----- Added by Keerthi ------------",
+    "   published: true  → topic is reviewed and shown in student timetable",
+    "   published: false → topic is hidden from timetable (not yet reviewed)",
+    "   To show a new topic: set published to true and reload the server.",
     "============================================================="
   ],
 
@@ -33,16 +38,16 @@
       "grade": "6",
       "isActive": true,
       "topics": [
-        { "topicId": "fractions",              "order": 1,  "required": true  },
-        { "topicId": "data-handling",          "order": 2,  "required": true  },
-        { "topicId": "gravity",                "order": 3,  "required": true  },
-        { "topicId": "methods-of-separation",  "order": 4,  "required": true  },
-        { "topicId": "ancient-civilizations",  "order": 5,  "required": true  },
-        { "topicId": "maps-and-geography",     "order": 6,  "required": true  },
-        { "topicId": "civics",                 "order": 7,  "required": true  },
-        { "topicId": "kannada-basics",         "order": 8,  "required": true  },
-        { "topicId": "yoga",                   "order": 9,  "required": false },
-        { "topicId": "meditation",             "order": 10, "required": false }
+        { "topicId": "fractions",             "order": 1,  "required": true,  "published": true  },
+        { "topicId": "data-handling",         "order": 2,  "required": true,  "published": false },
+        { "topicId": "gravity",               "order": 3,  "required": true,  "published": true  },
+        { "topicId": "methods-of-separation", "order": 4,  "required": true,  "published": false },
+        { "topicId": "ancient-civilizations", "order": 5,  "required": true,  "published": true },
+        { "topicId": "maps-and-geography",    "order": 6,  "required": true,  "published": false },
+        { "topicId": "civics",                "order": 7,  "required": true,  "published": false },
+        { "topicId": "kannada-basics",        "order": 8,  "required": true,  "published": false },
+        { "topicId": "yoga",                  "order": 9,  "required": false, "published": false },
+        { "topicId": "meditation",            "order": 10, "required": false, "published": false }
       ]
     },
     {
@@ -52,16 +57,16 @@
       "grade": "6",
       "isActive": true,
       "topics": [
-        { "topicId": "fractions",              "order": 1,  "required": true  },
-        { "topicId": "fractions-advanced",     "order": 2,  "required": true  },
-        { "topicId": "real-numbers",           "order": 3,  "required": true  },
-        { "topicId": "data-handling",          "order": 4,  "required": true  },
-        { "topicId": "gravity",                "order": 5,  "required": true  },
-        { "topicId": "methods-of-separation",  "order": 6,  "required": true  },
-        { "topicId": "ancient-civilizations",  "order": 7,  "required": true  },
-        { "topicId": "civics",                 "order": 8,  "required": true  },
-        { "topicId": "kannada-basics",         "order": 9,  "required": true  },
-        { "topicId": "yoga",                   "order": 10, "required": false }
+        { "topicId": "fractions",             "order": 1,  "required": true,  "published": true  },
+        { "topicId": "fractions-advanced",    "order": 2,  "required": true,  "published": false },
+        { "topicId": "real-numbers",          "order": 3,  "required": true,  "published": false },
+        { "topicId": "data-handling",         "order": 4,  "required": true,  "published": false },
+        { "topicId": "gravity",               "order": 5,  "required": true,  "published": true  },
+        { "topicId": "methods-of-separation", "order": 6,  "required": true,  "published": false },
+        { "topicId": "ancient-civilizations", "order": 7,  "required": true,  "published": false },
+        { "topicId": "civics",                "order": 8,  "required": true,  "published": false },
+        { "topicId": "kannada-basics",        "order": 9,  "required": true,  "published": false },
+        { "topicId": "yoga",                  "order": 10, "required": false, "published": false }
       ]
     },
     {
@@ -71,39 +76,39 @@
       "grade": "6",
       "isActive": true,
       "topics": [
-        { "topicId": "fractions",    "order": 1, "required": true  },
-        { "topicId": "gravity",      "order": 2, "required": true  },
-        { "topicId": "yoga",         "order": 3, "required": true  },
-        { "topicId": "meditation",   "order": 4, "required": true  },
-        { "topicId": "kannada-basics","order": 5, "required": false }
+        { "topicId": "fractions",     "order": 1, "required": true,  "published": true  },
+        { "topicId": "gravity",       "order": 2, "required": true,  "published": true  },
+        { "topicId": "yoga",          "order": 3, "required": true,  "published": false },
+        { "topicId": "meditation",    "order": 4, "required": true,  "published": false },
+        { "topicId": "kannada-basics","order": 5, "required": false, "published": false }
       ]
     }
   ],
 
   "studentAssignments": [
     {
-      "studentId":  "diya",
+      "studentId":  "gargi",
       "pathId":     "path-grade6-core",
       "assignedBy": "mentor01",
-      "_note":      "Diya — visual learner, standard core path"
+      "_note":      "Gargi — standard core path"
     },
     {
-      "studentId":  "disha",
+      "studentId":  "ahilya",
       "pathId":     "path-grade6-core",
       "assignedBy": "mentor01",
-      "_note":      "Disha — creative learner, standard core path"
+      "_note":      "Ahilya — standard core path"
     },
     {
-      "studentId":  "vidvath",
+      "studentId":  "nachiketa",
       "pathId":     "path-grade6-advanced",
       "assignedBy": "mentor01",
-      "_note":      "Vidvath — energetic, practical; moved to advanced track"
+      "_note":      "Nachiketa — advanced track"
     },
     {
-      "studentId":  "mahanth",
+      "studentId":  "arjuna",
       "pathId":     "path-grade6-advanced",
       "assignedBy": "mentor01",
-      "_note":      "Mahanth — competitive, analytical; advanced track"
+      "_note":      "Arjuna — advanced track"
     }
   ]
 }

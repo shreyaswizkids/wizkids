@@ -31,6 +31,96 @@ router.get('/init', (req, res) => {
   try { res.json(buildInitSnapshot()); } catch (e) { err(res, e); }
 });
 
+//Added by keerthini
+// ── GET /api/content/:subject/:topic ─────────────────────────────────────────
+// This API endpoint fetches all 6 content JSON files for a given subject and topic
+// from the published/ folder (locally or from GitHub/GCS depending on CONTENT_BASE_URL in .env).
+//
+// URL format  : GET /api/content/:subject/:topic
+// Example     : GET /api/content/Science/The_Wonderful_World_of_Science
+//
+// :subject    → Subject folder name  e.g. "Science", "Mathematics"
+// :topic      → Topic folder name    e.g. "The_Wonderful_World_of_Science", "Symmetry"
+//               (comes from githubFolder field in data/topics.js)
+// Returns:
+// {
+//   ok: true,
+//   content: {
+//     hooks       → 01_curiosity_hooks_v2.json      (array of curiosity hook cards)
+//     triggers    → 02_trigger_questions_v2.json    (array of trigger questions)
+//     concepts    → 03_concept_cards_v2.json        (array of concept cards)
+//     assessments → 04_assessments_v2.json          (light assessments + final assessment)
+//     deepDive    → 05_deep_dive_zone_v2.json       (deep dive scenario)
+//     project     → 06_project_zone_v2.json         (project options)
+//   }
+// }
+//
+// To switch from local to GitHub or GCS, update only CONTENT_BASE_URL in .env.
+// No code changes needed here.
+
+router.get('/content/:subject/:topic', async (req, res) => {
+  try {
+    const { subject, topic } = req.params;
+
+    // Read the base URL from .env
+    // Local  : http://localhost:3000/published/Grade_6
+    // GitHub : https://raw.githubusercontent.com/USER/REPO/BRANCH/published/Grade_6
+    // GCS    : https://storage.googleapis.com/BUCKET/published/Grade_6
+    const baseUrl = process.env.CONTENT_BASE_URL;
+
+    if (!baseUrl) {
+      return res.status(500).json({ ok: false, error: 'CONTENT_BASE_URL not set in .env' });
+    }
+
+    // Build the base path to the topic folder
+    // e.g. http://localhost:3000/published/Grade_6/Science/The_Wonderful_World_of_Science
+    const base = `${baseUrl}/${subject}/${topic}`;
+
+    // Fetch all 6 files in parallel for speed
+    const [r1, r2, r3, r4, r5, r6] = await Promise.all([
+      fetch(`${base}/01_curiosity_hooks_v2.json`),
+      fetch(`${base}/02_trigger_questions_v2.json`),
+      fetch(`${base}/03_concept_cards_v2.json`),
+      fetch(`${base}/04_assessments_v2.json`),
+      fetch(`${base}/05_deep_dive_zone_v2.json`),
+      fetch(`${base}/06_project_zone_v2.json`)
+    ]);
+
+    // File names kept separately for error reporting
+    const files = [
+      '01_curiosity_hooks_v2.json',
+      '02_trigger_questions_v2.json',
+      '03_concept_cards_v2.json',
+      '04_assessments_v2.json',
+      '05_deep_dive_zone_v2.json',
+      '06_project_zone_v2.json'
+    ];
+    const responses = [r1, r2, r3, r4, r5, r6];
+
+    // If any file is missing, return a 404 with the exact filename that failed
+    for (let i = 0; i < responses.length; i++) {
+      if (!responses[i].ok) {
+        return res.status(404).json({
+          ok: false,
+          error: `File not found: ${subject}/${topic}/${files[i]}`
+        });
+      }
+    }
+
+    // Parse all 6 responses as JSON
+    const [hooks, triggers, concepts, assessments, deepDive, project] =
+      await Promise.all(responses.map(r => r.json()));
+
+     // Return all 6 files merged into one content object
+    res.json({
+      ok: true,
+      content: { hooks, triggers, concepts, assessments, deepDive, project }
+    });
+
+  } catch (e) { err(res, e); }
+});
+
+
 // ── GET /api/events ───────────────────────────────────────────────────────────
 // SSE endpoint — mentor-app.js connects here for real-time updates.
 
